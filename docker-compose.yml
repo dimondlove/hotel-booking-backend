@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+    postgres:
+        image: postgres:15
+        container_name: hotel-booking-db
+        environment:
+            POSTGRES_DB: hotel_booking
+            POSTGRES_USER: hotel_user
+            POSTGRES_PASSWORD: hotel_password
+        ports:
+            - "5432:5432"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        networks:
+            - hotel-booking-network
+        restart: unless-stopped
+
+    pgadmin:
+        image: dpage/pgadmin4
+        container_name: hotel-booking-pgadmin
+        environment:
+            PGADMIN_DEFAULT_EMAIL: admin@hotel.com
+            PGADMIN_DEFAULT_PASSWORD: admin
+        ports:
+            - "8081:80"
+        networks:
+            - hotel-booking-network
+        depends_on:
+            - postgres
+        restart: unless-stopped
+
+volumes:
+    postgres_data:
+
+networks:
+    hotel-booking-network:
+        driver: bridge
