@@ -38,6 +38,10 @@ public class AuthController {
         user.setPassword(request.getPassword());
         user.setPhone(request.getPhone());
 
+        /*if (request.getEmail().contains("admin")) {
+            user.setRole(User.UserRole.ADMIN);
+        }*/
+
         User savedUser = userService.saveUser(user);
         String jwtToken = jwtService.generateToken(savedUser);
 
