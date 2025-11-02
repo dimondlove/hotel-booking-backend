@@ -11,6 +11,7 @@ import com.hotelbooking.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -43,6 +44,27 @@ public class AuthController {
         }*/
 
         User savedUser = userService.saveUser(user);
+        String jwtToken = jwtService.generateToken(savedUser);
+
+        return ResponseEntity.ok(new AuthResponse(jwtToken, savedUser));
+    }
+
+    @PostMapping("/register-admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> registerAdmin(@Valid @RequestBody RegisterRequest request) {
+        if (userService.existsByEmail(request.getEmail())) {
+            return ResponseEntity.badRequest().body(new ApiResponse("Email is already taken!", false));
+        }
+
+        User user = new User();
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setEmail(request.getEmail());
+        user.setPassword(request.getPassword());
+        user.setPhone(request.getPhone());
+        user.setRole(User.UserRole.ADMIN);
+
+        User savedUser = userService.saveAdmin(user);
         String jwtToken = jwtService.generateToken(savedUser);
 
         return ResponseEntity.ok(new AuthResponse(jwtToken, savedUser));
