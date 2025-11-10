@@ -20,6 +20,7 @@ public class BookingResponse {
     private LocalDate checkInDate;
     private LocalDate checkOutDate;
     private Integer guests;
+
     private BigDecimal totalPrice;
     private Booking.BookingStatus status;
     private String specialRequests;

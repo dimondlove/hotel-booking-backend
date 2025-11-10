@@ -1,6 +1,7 @@
 package com.hotelbooking.service;
 
 import com.hotelbooking.dto.request.CreateRoomRequest;
+import com.hotelbooking.dto.request.UpdateRoomRequest;
 import com.hotelbooking.dto.response.RoomResponse;
 import com.hotelbooking.model.Hotel;
 import com.hotelbooking.model.Room;
@@ -25,8 +26,20 @@ public class RoomService {
                 .collect(Collectors.toList());
     }
 
+    public List<RoomResponse> getAllRoomsForAdmin() {
+        return roomRepository.findAll().stream()
+                .map(this::convertToRoomResponse)
+                .collect(Collectors.toList());
+    }
+
     public List<RoomResponse> getRoomsByHotelId(Long hotelId) {
         return roomRepository.findByHotelIdAndAvailableTrue(hotelId).stream()
+                .map(this::convertToRoomResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<RoomResponse> getRoomsByHotelIdForAdmin(Long hotelId) {
+        return roomRepository.findByHotelId(hotelId).stream()
                 .map(this::convertToRoomResponse)
                 .collect(Collectors.toList());
     }
@@ -86,5 +99,30 @@ public class RoomService {
         response.setHotelId(room.getHotel().getId());
         response.setHotelName(room.getHotel().getName());
         return response;
+    }
+
+    @Transactional
+    public RoomResponse updateRoom(Long id, UpdateRoomRequest request) {
+        Room room = roomRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Room not found with id: " + id));
+
+        room.setName(request.getName());
+        room.setDescription(request.getDescription());
+        room.setRoomType(request.getRoomType());
+        room.setCapacity(request.getCapacity());
+        room.setPricePerNight(request.getPricePerNight());
+        room.setAmenities(request.getAmenities());
+        room.setImages(request.getImages());
+        room.setAvailable(request.getAvailable());
+
+        Room updatedRoom = roomRepository.save(room);
+        return convertToRoomResponse(updatedRoom);
+    }
+
+    @Transactional
+    public void deleteRoom(Long id) {
+        Room room = roomRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Room not found with id: " + id));
+        roomRepository.delete(room);
     }
 }

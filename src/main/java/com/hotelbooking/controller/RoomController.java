@@ -1,6 +1,7 @@
 package com.hotelbooking.controller;
 
 import com.hotelbooking.dto.request.CreateRoomRequest;
+import com.hotelbooking.dto.request.UpdateRoomRequest;
 import com.hotelbooking.dto.response.RoomResponse;
 import com.hotelbooking.service.RoomService;
 import jakarta.validation.Valid;
@@ -20,6 +21,20 @@ public class RoomController {
     @GetMapping
     public ResponseEntity<List<RoomResponse>> getAllRooms() {
         List<RoomResponse> rooms = roomService.getAllRooms();
+        return ResponseEntity.ok(rooms);
+    }
+
+    @GetMapping("/admin/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<RoomResponse>> getAllRoomsForAdmin() {
+        List<RoomResponse> rooms = roomService.getAllRoomsForAdmin();
+        return ResponseEntity.ok(rooms);
+    }
+
+    @GetMapping("/admin/hotel/{hotelId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<RoomResponse>> getRoomsByHotelIdForAdmin(@PathVariable Long hotelId) {
+        List<RoomResponse> rooms = roomService.getRoomsByHotelIdForAdmin(hotelId);
         return ResponseEntity.ok(rooms);
     }
 
@@ -55,5 +70,21 @@ public class RoomController {
             @RequestParam Boolean available) {
         RoomResponse room = roomService.updateRoomAvailability(id, available);
         return ResponseEntity.ok(room);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<RoomResponse> updateRoom(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateRoomRequest request) {
+        RoomResponse room = roomService.updateRoom(id, request);
+        return ResponseEntity.ok(room);
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteRoom(@PathVariable Long id) {
+        roomService.deleteRoom(id);
+        return ResponseEntity.noContent().build();
     }
 }
