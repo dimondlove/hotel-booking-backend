@@ -8,6 +8,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -16,9 +17,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtService jwtService;
@@ -41,10 +42,27 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/hotels/**").permitAll()
-                        .requestMatchers("/rooms/**").permitAll()
-                        .requestMatchers("/bookings/my/**").authenticated()
+
+                        // Публичные GET запросы для отелей и комнат
+                        .requestMatchers(HttpMethod.GET, "/hotels/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/rooms/**").permitAll()
+
+                        // Административные endpoints - требуют роли ADMIN
+                        .requestMatchers(HttpMethod.POST, "/hotels/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/hotels/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/hotels/**").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/rooms/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/rooms/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/rooms/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/rooms/**").hasRole("ADMIN")
+
+                        // Административные endpoints для пользователей
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+
+                        // Бронирования - для аутентифицированных пользователей
                         .requestMatchers("/bookings/**").authenticated()
+
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )

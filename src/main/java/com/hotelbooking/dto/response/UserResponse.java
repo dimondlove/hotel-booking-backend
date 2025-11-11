@@ -1,10 +1,14 @@
 package com.hotelbooking.dto.response;
 
 import com.hotelbooking.model.User;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+@NoArgsConstructor
+@AllArgsConstructor
 @Data
 public class UserResponse {
     private Long id;
